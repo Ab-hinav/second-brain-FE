@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@plugin "../hero.ts";
+
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
+
+/* ensures bg/text tokens work in both themes */
+
+@layer utilities {
+  .link-colored {
+    @apply text-black dark:text-white transition-colors underline-offset-2;
+  }
+
+  /* works for normal :hover AND HeroUI's data-hover state */
+  .link-colored:hover,
+  .link-colored[data-hover="true"] {
+    @apply text-purple-600;
+  }
+}
+
+html { color-scheme: light dark; }
