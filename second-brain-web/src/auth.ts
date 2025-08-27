@@ -1,15 +1,17 @@
-import NextAuth from "next-auth"
+import NextAuth, { CredentialsSignin } from "next-auth"
 import GitHub from "next-auth/providers/github"
 import * as jose from 'jose';
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 
+
 async function signOAuthAssertion(payload: Record<string, any>) {
+
     const privatePem = process.env.FE_JWS_PRIVATE_PEM!;
     const iss = process.env.FE_JWS_ISS ?? "second-brain-web";
     const aud = process.env.FE_JWS_AUD ?? "second-brain-be";
     const alg = "ES256"; // matches the key we generated
-  
+    console.log('private key',privatePem);
     const pk = await jose.importPKCS8(privatePem, alg);
     return new jose.SignJWT(payload)
       .setProtectedHeader({ alg })
@@ -57,12 +59,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: { label: "Email", type: "email" },
           password: { label: "Password", type: "password" },
         },
+        
         async authorize(credentials) {
           const email = credentials?.email?.toString().toLowerCase().trim();
           const password = credentials?.password ?? "";
-          if (!email || !password) return null;
+          if (!email || !password) throw new CredentialsSignin();
 
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/signin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -70,15 +73,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
   
           if (!res.ok) {
-            return null;
+          
+            throw new CredentialsSignin();// This will result in error=CredentialsSignin
+          
           }
           const user = await res.json(); // { accessToken, refreshToken?, expiresAt?  }
           if (!user) {
-            return null;
+            throw new CredentialsSignin();
           }
+
+          console.log(user)
 
           return user; 
         },
+        
       })
   ],
   callbacks: {
@@ -87,6 +95,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token.id = (user as any).id;
         }
 
+      console.log('token data',token,account , user)
+
      if(account  && (account?.provider === 'google' || account?.provider === 'github')){
 
         // code for oauth-exchange
@@ -94,7 +104,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           user_id: token.id,
           email: token.email,
           name: token.name,
-          avatar_url: token.image,
+          avatar_url: token?.image || token?.picture,
         });
 
         const exchangeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/exchange`, {
@@ -123,13 +133,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
      // from login
      if(user && account?.provider === 'credentials'){
-        token.accessToken =  (user as any).accessToken;
-        token.refreshToken =  (user as any).refreshToken;
-        token.expiresAt =  (user as any).expiresAt;
-        // token.id =  user.id;
-        // token.name =  user.name;
-        // token.email =  user.email;
-        // token.image =  (user as any).avatar_url;
+        token.accessToken =  (user as any).access_token;
+        token.refreshToken =  (user as any).refresh_token;
+        token.expiresAt =  (user as any).expires_at;
      }
 
       const now = Math.floor(Date.now() / 1000);

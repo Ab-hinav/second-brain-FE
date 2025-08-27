@@ -7,8 +7,11 @@ export async function signIn(type:'github'|'google'){
 }
 
 export async function signInViaCreds(email:string, password:string){
-    return auth.signIn('credentials', {
+    return  await auth.signIn('credentials', {
         email,
-        password
-    ,redirect:true, redirectTo:'/dashboard'})
+        password,
+        redirect:true,
+        redirectTo:'/dashboard'
+    })
+    
 }

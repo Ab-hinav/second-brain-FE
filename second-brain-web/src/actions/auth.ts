@@ -1,6 +1,7 @@
 'use server'
-import {email, z} from 'zod';
+import { z} from 'zod';
 import { signInViaCreds } from './signIn';
+import { AuthError, CredentialsSignin } from 'next-auth';
 
 interface AuthUserFormState{
     errors: {
@@ -28,6 +29,17 @@ const signUpSchema = z.object({
     path: ["confirmPassword"],
 })
 
+
+function isNextRedirect(err: unknown): boolean {
+    return !!(
+      err &&
+      typeof err === 'object' &&
+      'digest' in err &&
+      typeof (err as any).digest === 'string' &&
+      (err as any).digest.startsWith('NEXT_REDIRECT')
+    );
+  }
+
 export async function AuthenticateUser( formState: AuthUserFormState,
     formData: FormData):Promise<AuthUserFormState>{
 
@@ -42,9 +54,24 @@ export async function AuthenticateUser( formState: AuthUserFormState,
             }
         }
 
-        try{
+
+        try {
             await signInViaCreds(parsedResp.data.email, parsedResp.data.password)
         }catch(err){
+
+
+            if (isNextRedirect(err)) throw err;
+
+            if (err instanceof CredentialsSignin) {
+                return { errors: { _form: ["Invalid email or password"] } };
+              }
+              // Other Auth.js errors (network, misconfig, etc.)
+              if (err instanceof AuthError) {
+                return { errors: { _form: ["Something went wrong. Please try again."] } };
+              }
+
+
+
             if(err instanceof Error){
                 return {
                     errors:{
@@ -54,7 +81,6 @@ export async function AuthenticateUser( formState: AuthUserFormState,
             }
             throw err;
         }
-
         return {
             errors:{}
         }
@@ -81,7 +107,7 @@ export async function SignUpUser( formState: AuthUserFormState,
         try{
             
             const signUpres = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
+              `${process.env.NEXT_PUBLIC_API_URL}/signup`,
               {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -124,6 +150,9 @@ export async function SignUpUser( formState: AuthUserFormState,
 
 
         }catch(err){
+
+            if (isNextRedirect(err)) throw err;
+
             if(err instanceof Error){
                 return {
                     errors:{
@@ -131,7 +160,6 @@ export async function SignUpUser( formState: AuthUserFormState,
                     }
                 }
             }
-            throw err;
         }
 
         return {

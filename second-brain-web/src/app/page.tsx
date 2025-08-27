@@ -14,7 +14,7 @@ export default async function LandingPage() {
   </div>;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8  ">
       <section className="text-center py-16">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Capture. Organize. Recall.</h1>
         <p className="opacity-80 max-w-2xl mx-auto">
@@ -25,11 +25,20 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <Card>
-        <CardBody className="grid md:grid-cols-3 gap-6">
-          <div><h3 className="font-semibold">Links</h3><p className="opacity-70">X/Twitter, YouTube, articles…</p></div>
-          <div><h3 className="font-semibold">Notes</h3><p className="opacity-70">Quick text with tags.</p></div>
-          <div><h3 className="font-semibold">Share</h3><p className="opacity-70">Read-only brain sharing.</p></div>
+      <Card className="m-10 w-fit mx-auto" >
+        <CardBody className="flex flex-col items-center justify-center gap-6">
+          <div className="text-center">
+            <h3 className="font-semibold">Links</h3>
+            <p className="opacity-70">X/Twitter, YouTube, articles…</p>
+          </div>
+          <div className="text-center">
+            <h3 className="font-semibold">Notes</h3>
+            <p className="opacity-70">Quick text with tags.</p>
+          </div>
+          <div className="text-center">
+            <h3 className="font-semibold">Share</h3>
+            <p className="opacity-70">Read-only brain sharing.</p>
+          </div>
         </CardBody>
       </Card>
     </div>

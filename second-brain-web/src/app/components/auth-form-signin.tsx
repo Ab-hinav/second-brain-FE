@@ -48,6 +48,11 @@ export default function AuthFormSignIn(){
             Sign in
           </Button>
         </form>
+        {result?.errors._form && (
+                    <div className="bg-red-50 border border-red-200 rounded-md p-3 mt-1">
+                        <p className="text-sm text-red-800">{result.errors._form?.join(', ')}</p>
+                    </div>
+                )}
         <p className="text-xs opacity-60 mt-3">
           New User? Try{" "}
           <Link href={"/auth?isSignup=true"} className="underline">

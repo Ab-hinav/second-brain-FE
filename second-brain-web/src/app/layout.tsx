@@ -19,7 +19,8 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body className={`${inter.className} bg-background text-foreground`}>
         <Providers>
           <TopNav />
-          <main className="container mx-auto p-4">{children}</main>
+          <main className="container mx-auto">{children}</main>
+         
         </Providers>
       </body>
     </html>

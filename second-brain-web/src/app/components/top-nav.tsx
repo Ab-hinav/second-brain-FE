@@ -1,6 +1,6 @@
 "use client";
 
-import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Skeleton, Spinner} from "@heroui/react";
+import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button} from "@heroui/react";
 import ThemeSwitcher from "./theme-switcher";
 import { Brain } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -32,7 +32,7 @@ export default function TopNav() {
       <NavbarContent justify="center">
         <NavbarItem>
           <Link href="/dashboard" className="link-colored">
-            Go to Dashboard
+            { !user.data ? 'Go to Dashboard' :  `Welcome ${user.data?.user?.name}`}
           </Link>
         </NavbarItem>
       </NavbarContent>
