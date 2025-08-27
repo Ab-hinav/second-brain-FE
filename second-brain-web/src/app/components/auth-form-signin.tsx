@@ -40,7 +40,7 @@ export default function AuthFormSignIn(){
           />
           <Button
             type="submit"
-            color="primary"
+            color="secondary"
             size="lg"
             isLoading={isPending}
             className="w-full"

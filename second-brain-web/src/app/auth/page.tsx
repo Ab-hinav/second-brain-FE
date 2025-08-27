@@ -21,7 +21,7 @@ export default async function AuthPage({searchParams}: {
 
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-5xl overflow-hidden">
         <CardBody className="p-0">
           <div className="grid grid-cols-1 md:grid-cols-2">
@@ -45,13 +45,14 @@ export default async function AuthPage({searchParams}: {
                   className="w-full"
                   type="submit"
                 >
-                  Continue with Google <FaGoogle />
+                  Continue with Google <FaGoogle  />
                 </Button>
                 </form>
                 <form action={actions.signIn.bind(null, 'github')} >
                 <Button
                    className="w-full"
                   variant="bordered"
+                  
                   type="submit"
                 >
                   Continue with GitHub <FaGithub />

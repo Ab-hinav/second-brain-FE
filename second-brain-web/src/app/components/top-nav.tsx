@@ -14,16 +14,16 @@ export default function TopNav() {
       null
     ) : ( user.data?.user ? (
         <form action={actions.signOut} >
-        <Button color="primary" type='submit' >SignOut</Button>
+        <Button color="secondary" type='submit' >SignOut</Button>
     </form>
     ) : (
-      <Button as={Link} href="/auth" color="primary" radius="sm">
+      <Button as={Link} href="/auth" color="secondary" radius="sm">
         Sign in
       </Button>
     ));
 
   return (
-    <Navbar maxWidth="full" className="border-b">
+    <Navbar maxWidth="full" className="shadow dark:bg-gray-800">
       <NavbarBrand as={Link} href="/" className="gap-2 link-colored">
         <Brain className="w-6 h-6" />
         <span className="font-semibold">Second Brain</span>
