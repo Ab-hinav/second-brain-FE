@@ -11,6 +11,7 @@ import AuthFormSignUp from "../components/auth-form-signup";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import AuthFormSignIn from "../components/auth-form-signin";
 
+/** Auth page: toggles between Sign In and Sign Up via `?isSignup=true`. */
 export default async function AuthPage({searchParams}: {
   searchParams?: {
     isSignup?: string;

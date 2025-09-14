@@ -13,14 +13,18 @@ export const metadata = {
 
 const inter = Inter({subsets: ["latin"]});
 
+/** Root server layout: global nav, footer, and theme/Session providers. */
 export default function RootLayout({children}: {children: React.ReactNode}) {
+
+  console.log('called when visiting root ?')
+
   return (
     <html lang="en" suppressHydrationWarning>
       {/* HeroUI theme tokens: text-foreground / bg-background */}
       <body className={`${inter.className} bg-background text-foreground`}>
         <Providers>
           <TopNav />
-          <main className="container mx-auto">{children}</main>
+          <main >{children}</main>
          <Footer></Footer>
         </Providers>
       </body>

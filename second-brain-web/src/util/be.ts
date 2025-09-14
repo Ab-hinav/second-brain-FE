@@ -1,8 +1,12 @@
+/**
+ * Server-only helpers for calling the backend API with auth, caching, and retries.
+ */
 import "server-only";
 
 import { auth } from "@/auth";
 import { revalidateTag } from "next/cache";
 
+/** Options for backend calls with sensible defaults. */
 type BeInit = Omit<RequestInit, "headers"> & {
   headers?: Record<string, string>;
   tags?: string[];
@@ -11,6 +15,10 @@ type BeInit = Omit<RequestInit, "headers"> & {
   retries?: number;         // default 1
 };
 
+/**
+ * Low-level backend fetch that attaches session bearer, supports retries,
+ * timeouts, and Next.js caching for GETs via `tags`/`revalidate`.
+ */
 export async function be(path: string, init: BeInit = {}): Promise<Response> {
   const session = await auth();
   const token = (session as any)?.accessToken;               // your JWE
@@ -52,12 +60,17 @@ export async function be(path: string, init: BeInit = {}): Promise<Response> {
   return res;
 }
 
+/**
+ * JSON convenience wrapper around `be()` that parses the JSON body.
+ */
 export async function beJSON<T>(path: string, init?: BeInit): Promise<T> {
   const res = await be(path, init);
   return res.json() as Promise<T>;
 }
 
-// Convenience for writes + cache bust
+/**
+ * Convenience for POST-like writes plus optional cache busting of tags.
+ */
 export async function beWrite(path: string, body: unknown, opts: Omit<BeInit, "method"|"body"> & { tagsToRevalidate?: string[] } = {}) {
   await be(path, { ...opts, method: "POST", body: JSON.stringify(body) });
   opts.tagsToRevalidate?.forEach(t => revalidateTag(t));

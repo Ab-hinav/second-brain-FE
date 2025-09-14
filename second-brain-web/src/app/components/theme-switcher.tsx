@@ -4,6 +4,7 @@ import {Switch} from "@heroui/react";
 import {useTheme} from "next-themes";
 import {useEffect, useState} from "react";
 
+/** Toggle between light/dark themes using next-themes. */
 export default function ThemeSwitcher() {
   const {resolvedTheme, setTheme} = useTheme();
   const [mounted, setMounted] = useState(false);

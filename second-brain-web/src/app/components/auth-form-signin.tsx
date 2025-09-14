@@ -6,6 +6,7 @@ import * as actions from '@/actions';
 import Link from "next/link";
 
 
+/** Sign-in form that calls the AuthenticateUser server action. */
 export default function AuthFormSignIn(){
 
     const [result, formAction, isPending] = useActionState(

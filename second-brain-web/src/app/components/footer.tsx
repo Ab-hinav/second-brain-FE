@@ -1,5 +1,5 @@
-// src/components/Footer.tsx
 "use client";
+// Simple app footer with links and branding
 
 import { Card, CardBody } from "@heroui/react";
 import Link from "next/link";

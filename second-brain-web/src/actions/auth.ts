@@ -1,8 +1,13 @@
 'use server'
+/**
+ * Server actions for authentication flows: sign-in with credentials and sign-up.
+ * Validates inputs with zod and returns field and form-level errors for UI display.
+ */
 import { z} from 'zod';
 import { signInViaCreds } from './signIn';
 import { AuthError, CredentialsSignin } from 'next-auth';
 
+/** Result shape for auth forms to surface validation and form errors. */
 interface AuthUserFormState{
     errors: {
         name?: string[];
@@ -14,11 +19,13 @@ interface AuthUserFormState{
 }
 
 
+/** Input validation for credentials sign-in. */
 const signInSchema = z.object({
     email: z.email('Invalid Email address'),
     password: z.string().min(3,"Password must be at least 3 characters long"),
 })
 
+/** Input validation for email/password sign-up. */
 const signUpSchema = z.object({
     name : z.string().min(3,'Name should have atleast 3 characters'),
     email: z.email('Invalid Email address'),
@@ -30,6 +37,7 @@ const signUpSchema = z.object({
 })
 
 
+/** Detects Auth.js redirect exceptions so they can propagate. */
 function isNextRedirect(err: unknown): boolean {
     return !!(
       err &&
@@ -40,8 +48,14 @@ function isNextRedirect(err: unknown): boolean {
     );
   }
 
-export async function AuthenticateUser( formState: AuthUserFormState,
-    formData: FormData):Promise<AuthUserFormState>{
+/**
+ * Attempts to authenticate a user via credential provider.
+ * Returns field errors if validation fails or `_form` for top-level errors.
+ */
+export async function AuthenticateUser(
+  formState: AuthUserFormState,
+  formData: FormData
+): Promise<AuthUserFormState> {
 
         const parsedResp = signInSchema.safeParse({
             email : formData.get('email'),
@@ -88,8 +102,13 @@ export async function AuthenticateUser( formState: AuthUserFormState,
 }
 
 
-export async function SignUpUser( formState: AuthUserFormState,
-    formData: FormData):Promise<AuthUserFormState>{
+/**
+ * Creates a new user account and signs them in on success.
+ */
+export async function SignUpUser(
+  formState: AuthUserFormState,
+  formData: FormData
+): Promise<AuthUserFormState> {
         console.log('run me')
         const parsedResp = signUpSchema.safeParse({
             name: formData.get('name'),

@@ -6,6 +6,7 @@ import * as actions from '@/actions';
 import Link from "next/link";
 
 
+/** Sign-up form that calls the SignUpUser server action. */
 export default function AuthFormSignUp(){
 
     const [result, formAction, isPending] = useActionState(

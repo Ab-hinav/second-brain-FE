@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import {Button, Card, CardBody, CardFooter, CardHeader} from "@heroui/react";
 import Link from "next/link";
 
+/** Landing page (server component). Chooses CTA based on auth state. */
 export default async function LandingPage() {
 
   const session = await auth();

@@ -1,3 +1,9 @@
+/**
+ * NextAuth configuration: supports GitHub/Google OAuth and credentials.
+ * - On OAuth, signs a short-lived ES256 assertion and exchanges it with the BE.
+ * - Attaches access/refresh tokens to the JWT and refreshes when expiring.
+ * - On demand, fetches user profile via /me to hydrate token fields.
+ */
 import NextAuth, { CredentialsSignin } from "next-auth"
 import GitHub from "next-auth/providers/github"
 import * as jose from 'jose';
@@ -5,6 +11,10 @@ import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 
 
+/**
+ * Signs a short-lived ES256 JWT assertion with FE private key for OAuth exchange.
+ * The BE verifies this assertion to mint application tokens.
+ */
 async function signOAuthAssertion(payload: Record<string, any>) {
 
     const privatePem = process.env.FE_JWS_PRIVATE_PEM!;
@@ -82,7 +92,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             throw new CredentialsSignin();
           }
 
-          console.log(user)
+          // console.log(user)
 
           return user; 
         },
@@ -95,8 +105,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token.id = (user as any).id;
         }
 
-      console.log('token data',token,account , user)
+      // console.log('token data',token,account , user)
 
+     // OAuth flow: exchange provider profile for app tokens using signed assertion
      if(account  && (account?.provider === 'google' || account?.provider === 'github')){
 
         // code for oauth-exchange
@@ -128,10 +139,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         
 
-        console.log('run me')
+        // console.log('run me')
      }
 
-     // from login
+     // Credentials flow: tokens are returned directly by the BE
      if(user && account?.provider === 'credentials'){
         token.accessToken =  (user as any).access_token;
         token.refreshToken =  (user as any).refresh_token;
@@ -139,21 +150,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      }
 
       const now = Math.floor(Date.now() / 1000);
-      if (token.expiresAt && now > (Number(token.expiresAt) - 60) && token.expiresAt) {
+
+     // Refresh near-expiry tokens using refresh token
+     // @ts-ignore
+      if (token.expiresAt && now > (Number(Date.parse(token.expiresAt)/1000) - 60) && token.expiresAt) {
         const refreshRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
           method: "POST",
           headers: { "content-type": "application/json" },
           cache: "no-store",
           body: JSON.stringify({ refreshToken: token.refreshToken }),
         });
+        
         if (refreshRes.ok) {
           const refreshData = await refreshRes.json(); // { accessToken, refreshToken?, expiresAt }
-          token.accessToken = refreshData.accessToken;
-          token.refreshToken = refreshData.refreshToken ?? token.refreshToken;
-          token.expiresAt = refreshData.expiresAt ?? token.expiresAt;
+          console.log('refresh', refreshData)
+          token.accessToken = refreshData.access_token;
+          token.refreshToken = refreshData.refresh_token ?? token.refreshToken;
+          token.expiresAt = refreshData.expires_at ?? token.expiresAt;
+        }else{
+            token = {};
+            return token;
         }
       }
 
+      // Hydrate missing profile fields from /me if necessary
       if(!token.id || !token.name ||!token.email){
 
         // get these via me api call
@@ -181,6 +201,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id as string;
+        (session as any).accessToken = token.accessToken as string | undefined;
       }
       
       return session;
