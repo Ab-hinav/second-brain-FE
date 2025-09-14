@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Second Brain — Frontend (Phase 0)
 
-## Getting Started
+Next.js app for capturing, organizing, and recalling content into “Brains” (smart folders). Uses NextAuth for auth, HeroUI for UI, and tag-based revalidation for fast UX.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js 15 (App Router), React 19
+- NextAuth (GitHub, Google, Credentials)
+- HeroUI + Tailwind utilities
+- Zod for validation
+
+## Project Structure
+
+```
+second-brain-FE/
+├─ src/
+│  ├─ actions/           # Server actions (auth, brain, items)
+│  ├─ api/               # Server-only API helpers (be/beJSON)
+│  ├─ app/               # App Router pages, layouts, components
+│  │  ├─ api/auth/[...nextauth]/route.ts  # NextAuth handler
+│  │  ├─ components/     # UI components (TopNav, Sidebar, forms)
+│  │  └─ dashboard/      # Authenticated pages
+│  ├─ types/             # Shared types
+│  ├─ util/              # be/beJSON/beWrite and helpers
+│  └─ hero.ts            # HeroUI Tailwind preset
+├─ public/               # Static assets
+├─ next.config.ts        # Next.js config
+├─ tsconfig.json         # Path alias: @/* -> ./src/*
+├─ package.json          # Scripts and deps
+└─ .env(.local)          # FE env variables (see below)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local` (or use your secrets setup) with:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `NEXT_PUBLIC_API_URL` — Base URL of the backend API (e.g. http://localhost:3001)
+- `GITHUB_ID`, `GITHUB_SECRET` — OAuth credentials
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — OAuth credentials
+- `FE_JWS_PRIVATE_PEM` — PKCS8 private key (ES256) for OAuth exchange assertion
+- `FE_JWS_ISS` — Issuer for FE assertion (default: `second-brain-web`)
+- `FE_JWS_AUD` — Audience for FE assertion (default: `second-brain-be`)
 
-## Learn More
+Never commit private keys or secrets.
 
-To learn more about Next.js, take a look at the following resources:
+## Running Locally
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Prereqs: Node 18+ recommended.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Install deps: `npm install`
+- Dev server: `npm run dev` → http://localhost:3000
+- Lint: `npm run lint`
+- Build: `npm run build`
+- Start: `npm run start`
 
-## Deploy on Vercel
+## Conventions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Server-only fetch helpers in `src/util/be.ts`:
+  - `be(path, opts)` → fetch with auth, retries, cache tags
+  - `beJSON<T>(path, opts)` → `be()` + `res.json()`
+  - `beWrite(path, body, { tagsToRevalidate })` → POST + revalidate tags
+- API helpers (e.g. `src/api/brain-nav.ts`) use `beJSON` and tags like:
+  - `brain-nav`, `all-tag`, `${brainId}:detail`, `${brainId}:all`, `${brainId}:count`
+- Server actions under `src/actions/*` perform validations (Zod), call BE, and revalidate tags.
+- App Router pages under `src/app/*` are server components by default; client components use "use client".
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Phase 0 — Completed
+
+- Auth flows: GitHub/Google OAuth, credentials sign-in, refresh flow
+- Token exchange via signed ES256 assertion (OAuth)
+- Dashboard shell with responsive sidebar and top nav
+- Sidebar brains list + sections; tag list from BE
+- Create Brain modal (server action)
+- Create Item form for multiple types (link, note, tweet, video, youtube, other)
+- Tag-based cache revalidation for nav, lists, counts, and tags
+- Theme switcher (light/dark)
+- Basic search param wiring in TopNav
+- Centralized BE fetch utilities (be/beJSON/beWrite)
+- Frontend project flattened to repo root
+
+## Phase 0 — TODOs
+
+- Item lists and detail pages per section (tweets/videos/docs/links)
+- Brain counts and details wired to BE (`${brainId}:count`, `${brainId}:detail`)
+- Search and filtering on server for item lists
+- Sharing: Wire share toggle/invite actions to BE
+- Error/empty states polish and loading skeletons
+- E2E smoke test for critical flows
+
+## Notes
+
+- Path alias `@/*` points to `src/*` (see `tsconfig.json`).
+- Revalidation: writes should call `revalidateTag()` via `beWrite(..., { tagsToRevalidate })` or manually where needed.
+
+## Scripts
+
+- `npm run dev` — Start dev server
+- `npm run build` — Production build
+- `npm run start` — Start built app
+- `npm run lint` — Lint sources
