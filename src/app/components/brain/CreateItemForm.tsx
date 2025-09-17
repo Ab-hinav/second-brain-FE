@@ -158,14 +158,18 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
                 isPrefilling ? (
                   <Spinner size="sm" />
                 ) : (
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    onPress={() => runPrefill(url)}
-                    isDisabled={!url || pending}
-                  >
-                    Prefill
-                  </Button>
+                  <div className="pointer-events-auto">
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      type="button"
+                      aria-label="Prefill metadata"
+                      onPress={() => runPrefill(url)}
+                      isDisabled={!url || pending}
+                    >
+                      Prefill
+                    </Button>
+                  </div>
                 )
               }
             />
