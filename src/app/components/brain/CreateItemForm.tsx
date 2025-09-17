@@ -11,6 +11,7 @@ import {
   Textarea,
   Switch,
   Chip,
+  Spinner,
 } from "@heroui/react";
 import { CreateItemForBrain  } from "@/actions/items";
 import { CreateItemState, INITIAL_STATE } from "@/types/brain";
@@ -40,6 +41,7 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
   const [content,setContentInput] = React.useState("")
   const [isOn,setIsOn] = React.useState(false);
   const [isPrefilling, setIsPrefilling] = React.useState(false);
+  const lastPrefilledRef = React.useRef<string>("");
 
   /** Add a trimmed tag from the input if not duplicate. */
   function addTagFromInput() {
@@ -111,20 +113,31 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
 
   }
 
-  async function handleUrlBlur() {
-    const val = url.trim();
-    if (!val) return;
+  async function runPrefill(currentUrl: string) {
+    const val = currentUrl.trim();
+    if (!val || lastPrefilledRef.current === val) return;
     try {
       setIsPrefilling(true);
       const meta = await prefillFromUrl(val);
+      console.log('meta',meta)
+      // Only prefill if the user hasn't already typed values
       if (meta?.title && !title) setTitleInput(meta.title);
       if (meta?.description && !content) setContentInput(meta.description);
-    } catch {
-      // ignore prefill errors silently
+      lastPrefilledRef.current = val;
+    } catch (e) {
+      // no-op: network/CORS failures are ignored
     } finally {
       setIsPrefilling(false);
     }
   }
+
+  // Debounced prefill when the URL looks ready (user pauses typing)
+  React.useEffect(() => {
+    if (!url || url.length < 8) return; // quick guard
+    const t = setTimeout(() => runPrefill(url), 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url]);
 
 
   return (
@@ -138,10 +151,10 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
               placeholder="https://…"
               value={url}
               onChange={(e) => setUrlInput(e.target.value)}
-              onBlur={handleUrlBlur}
               isDisabled={pending}
               isInvalid={!!state?.errors?.url}
               errorMessage={state?.errors?.url?.join(", ")}
+              endContent={isPrefilling ? <Spinner size="sm" /> : null}
             />
             <Input
               name="title"
