@@ -15,6 +15,7 @@ import {
 import { CreateItemForBrain  } from "@/actions/items";
 import { CreateItemState, INITIAL_STATE } from "@/types/brain";
 import { useRouter } from "next/navigation";
+import { prefillFromUrl } from "@/util/prefill";
 
 type Props = {
   brainId: string;
@@ -38,6 +39,7 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
   const [title,setTitleInput] = React.useState("")
   const [content,setContentInput] = React.useState("")
   const [isOn,setIsOn] = React.useState(false);
+  const [isPrefilling, setIsPrefilling] = React.useState(false);
 
   /** Add a trimmed tag from the input if not duplicate. */
   function addTagFromInput() {
@@ -109,6 +111,21 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
 
   }
 
+  async function handleUrlBlur() {
+    const val = url.trim();
+    if (!val) return;
+    try {
+      setIsPrefilling(true);
+      const meta = await prefillFromUrl(val);
+      if (meta?.title && !title) setTitleInput(meta.title);
+      if (meta?.description && !content) setContentInput(meta.description);
+    } catch {
+      // ignore prefill errors silently
+    } finally {
+      setIsPrefilling(false);
+    }
+  }
+
 
   return (
     <Card>
@@ -121,6 +138,7 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
               placeholder="https://…"
               value={url}
               onChange={(e) => setUrlInput(e.target.value)}
+              onBlur={handleUrlBlur}
               isDisabled={pending}
               isInvalid={!!state?.errors?.url}
               errorMessage={state?.errors?.url?.join(", ")}
