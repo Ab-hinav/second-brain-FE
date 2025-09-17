@@ -17,6 +17,7 @@ import { CreateItemForBrain  } from "@/actions/items";
 import { CreateItemState, INITIAL_STATE } from "@/types/brain";
 import { useRouter } from "next/navigation";
 import { prefillFromUrl } from "@/util/prefill";
+import { Wand2 } from "lucide-react";
 
 type Props = {
   brainId: string;
@@ -41,7 +42,6 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
   const [content,setContentInput] = React.useState("")
   const [isOn,setIsOn] = React.useState(false);
   const [isPrefilling, setIsPrefilling] = React.useState(false);
-  const lastPrefilledRef = React.useRef<string>("");
 
   /** Add a trimmed tag from the input if not duplicate. */
   function addTagFromInput() {
@@ -115,7 +115,7 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
 
   async function runPrefill(currentUrl: string) {
     const val = currentUrl.trim();
-    if (!val || lastPrefilledRef.current === val) return;
+    if (!val) return;
     try {
       setIsPrefilling(true);
       const meta = await prefillFromUrl(val);
@@ -123,9 +123,8 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
       // Only prefill if the user hasn't already typed values
       if (meta?.title && !title) setTitleInput(meta.title);
       if (meta?.description && !content) setContentInput(meta.description);
-      lastPrefilledRef.current = val;
     } catch (e) {
-      // no-op: network/CORS failures are ignored
+      console.error(e);
     } finally {
       setIsPrefilling(false);
     }
@@ -161,11 +160,14 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
                   <div className="pointer-events-auto">
                     <Button
                       size="sm"
-                      variant="flat"
+                      color="secondary"
+                      variant="solid"
                       type="button"
                       aria-label="Prefill metadata"
                       onPress={() => runPrefill(url)}
                       isDisabled={!url || pending}
+                      startContent={<Wand2 size={14} />}
+                      className="shadow-sm"
                     >
                       Prefill
                     </Button>
