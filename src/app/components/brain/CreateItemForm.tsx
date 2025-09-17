@@ -154,7 +154,20 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
               isDisabled={pending}
               isInvalid={!!state?.errors?.url}
               errorMessage={state?.errors?.url?.join(", ")}
-              endContent={isPrefilling ? <Spinner size="sm" /> : null}
+              endContent={
+                isPrefilling ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    onPress={() => runPrefill(url)}
+                    isDisabled={!url || pending}
+                  >
+                    Prefill
+                  </Button>
+                )
+              }
             />
             <Input
               name="title"

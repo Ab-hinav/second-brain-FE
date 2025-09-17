@@ -15,9 +15,9 @@ function isHttpUrl(value: string): boolean {
 export async function prefillFromUrl(inputUrl: string): Promise<PrefillMeta> {
   if (!isHttpUrl(inputUrl)) return {};
   try {
-    const res = await fetch(`/api/prefill?url=${encodeURIComponent(inputUrl)}`, {
-      cache: "no-store",
-    });
+    const base = process.env.NEXT_PUBLIC_API_URL || "";
+    const url = `${base.replace(/\/$/, "")}/prefill?url=${encodeURIComponent(inputUrl)}`;
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) return {};
     return (await res.json()) as PrefillMeta;
   } catch {
