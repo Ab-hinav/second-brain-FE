@@ -11,10 +11,13 @@ import {
   Textarea,
   Switch,
   Chip,
+  Spinner,
 } from "@heroui/react";
 import { CreateItemForBrain  } from "@/actions/items";
 import { CreateItemState, INITIAL_STATE } from "@/types/brain";
 import { useRouter } from "next/navigation";
+import { prefillFromUrl } from "@/util/prefill";
+import { Wand2 } from "lucide-react";
 
 type Props = {
   brainId: string;
@@ -38,6 +41,7 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
   const [title,setTitleInput] = React.useState("")
   const [content,setContentInput] = React.useState("")
   const [isOn,setIsOn] = React.useState(false);
+  const [isPrefilling, setIsPrefilling] = React.useState(false);
 
   /** Add a trimmed tag from the input if not duplicate. */
   function addTagFromInput() {
@@ -109,6 +113,31 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
 
   }
 
+  async function runPrefill(currentUrl: string) {
+    const val = currentUrl.trim();
+    if (!val) return;
+    try {
+      setIsPrefilling(true);
+      const meta = await prefillFromUrl(val);
+      console.log('meta',meta)
+      // Only prefill if the user hasn't already typed values
+      if (meta?.title && !title) setTitleInput(meta.title);
+      if (meta?.description && !content) setContentInput(meta.description);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsPrefilling(false);
+    }
+  }
+
+  // Debounced prefill when the URL looks ready (user pauses typing)
+  React.useEffect(() => {
+    if (!url || url.length < 8) return; // quick guard
+    const t = setTimeout(() => runPrefill(url), 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url]);
+
 
   return (
     <Card>
@@ -124,6 +153,27 @@ export default function CreateItemForm({ brainId, type, redirectUrl }: Props) {
               isDisabled={pending}
               isInvalid={!!state?.errors?.url}
               errorMessage={state?.errors?.url?.join(", ")}
+              endContent={
+                isPrefilling ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <div className="pointer-events-auto">
+                    <Button
+                      size="sm"
+                      color="secondary"
+                      variant="solid"
+                      type="button"
+                      aria-label="Prefill metadata"
+                      onPress={() => runPrefill(url)}
+                      isDisabled={!url || pending}
+                      startContent={<Wand2 size={14} />}
+                      className="shadow-sm"
+                    >
+                      Prefill
+                    </Button>
+                  </div>
+                )
+              }
             />
             <Input
               name="title"
