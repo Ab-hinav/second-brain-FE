@@ -16,6 +16,22 @@ export type SectionItem = {
   createdAt?: string;
 };
 
+export type BrainItemType = 'tweet' | 'video' | 'note' | 'link' | 'other' | 'youtube';
+
+export type BrainItem = {
+  id: string;
+  brainId: string;
+  title: string;
+  type: BrainItemType;
+  url?: string;
+  content?: string;
+  tags: string[];
+  pinned: boolean;
+  createdAt: string;
+  thumbnail?: string; // e.g. for videos
+  author?: string;    // e.g. for tweets
+};
+
 /**
  * A single brain entry for sidebar navigation and feature availability flags.
  */
