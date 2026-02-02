@@ -1,100 +1,70 @@
-# Second Brain — Frontend (Phase 0)
+# Second Brain (Frontend)
 
-Next.js app for capturing, organizing, and recalling content into “Brains” (smart folders). Uses NextAuth for auth, HeroUI for UI, and tag-based revalidation for fast UX.
+A personal knowledge base application built with Next.js. Capture, organize, and recall content in "Brains" (smart folders).
+
+## Features
+
+- **Authentication**: Secure login via GitHub, Google, or Credentials (NextAuth).
+- **Brain Management**: Create and organize multiple "Brains".
+- **Content Capture**: Add Links, Notes, Tweets, Videos, and more.
+- **Modern UI**: Clean interface built with HeroUI and Tailwind CSS.
+- **Dark Mode**: Fully supported theme switcher.
 
 ## Tech Stack
 
-- Next.js 15 (App Router), React 19
-- NextAuth (GitHub, Google, Credentials)
-- HeroUI + Tailwind utilities
-- Zod for validation
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS, HeroUI
+- **Auth**: NextAuth.js
+- **Validation**: Zod
 
-## Project Structure
+## Getting Started
 
-```
-second-brain-FE/
-├─ src/
-│  ├─ actions/           # Server actions (auth, brain, items)
-│  ├─ api/               # Server-only API helpers (be/beJSON)
-│  ├─ app/               # App Router pages, layouts, components
-│  │  ├─ api/auth/[...nextauth]/route.ts  # NextAuth handler
-│  │  ├─ components/     # UI components (TopNav, Sidebar, forms)
-│  │  └─ dashboard/      # Authenticated pages
-│  ├─ types/             # Shared types
-│  ├─ util/              # be/beJSON/beWrite and helpers
-│  └─ hero.ts            # HeroUI Tailwind preset
-├─ public/               # Static assets
-├─ next.config.ts        # Next.js config
-├─ tsconfig.json         # Path alias: @/* -> ./src/*
-├─ package.json          # Scripts and deps
-└─ .env(.local)          # FE env variables (see below)
-```
+### Prerequisites
 
-## Environment Variables
+- Node.js 18+
+- Backend API running (see `NEXT_PUBLIC_API_URL`)
 
-Create `.env.local` (or use your secrets setup) with:
+### Installation
 
-- `NEXT_PUBLIC_API_URL` — Base URL of the backend API (e.g. http://localhost:3001)
-- `GITHUB_ID`, `GITHUB_SECRET` — OAuth credentials
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — OAuth credentials
-- `FE_JWS_PRIVATE_PEM` — PKCS8 private key (ES256) for OAuth exchange assertion
-- `FE_JWS_ISS` — Issuer for FE assertion (default: `second-brain-web`)
-- `FE_JWS_AUD` — Audience for FE assertion (default: `second-brain-be`)
+1.  **Clone and Install:**
+    ```bash
+    git clone <repo-url>
+    cd second-brain-FE
+    npm install
+    ```
 
-Never commit private keys or secrets.
+2.  **Setup Environment:**
+    Create a `.env.local` file in the root directory:
 
-## Running Locally
+    ```env
+    # Backend URL
+    NEXT_PUBLIC_API_URL=http://localhost:3001
 
-Prereqs: Node 18+ recommended.
+    # NextAuth Config
+    AUTH_SECRET=your_auth_secret
 
-- Install deps: `npm install`
-- Dev server: `npm run dev` → http://localhost:3000
-- Lint: `npm run lint`
-- Build: `npm run build`
-- Start: `npm run start`
+    # OAuth Providers
+    GITHUB_ID=your_github_id
+    GITHUB_SECRET=your_github_secret
+    GOOGLE_CLIENT_ID=your_google_id
+    GOOGLE_CLIENT_SECRET=your_google_secret
 
-## Conventions
+    # Token Exchange (ES256)
+    FE_JWS_PRIVATE_PEM=your_private_key
+    FE_JWS_ISS=second-brain-web
+    FE_JWS_AUD=second-brain-be
+    ```
 
-- Server-only fetch helpers in `src/util/be.ts`:
-  - `be(path, opts)` → fetch with auth, retries, cache tags
-  - `beJSON<T>(path, opts)` → `be()` + `res.json()`
-  - `beWrite(path, body, { tagsToRevalidate })` → POST + revalidate tags
-- API helpers (e.g. `src/api/brain-nav.ts`) use `beJSON` and tags like:
-  - `brain-nav`, `all-tag`, `${brainId}:detail`, `${brainId}:all`, `${brainId}:count`
-- Server actions under `src/actions/*` perform validations (Zod), call BE, and revalidate tags.
-- App Router pages under `src/app/*` are server components by default; client components use "use client".
-
-## Phase 0 — Completed
-
-- Auth flows: GitHub/Google OAuth, credentials sign-in, refresh flow
-- Token exchange via signed ES256 assertion (OAuth)
-- Dashboard shell with responsive sidebar and top nav
-- Sidebar brains list + sections; tag list from BE
-- Create Brain modal (server action)
-- Create Item form for multiple types (link, note, tweet, video, youtube, other)
-- Tag-based cache revalidation for nav, lists, counts, and tags
-- Theme switcher (light/dark)
-- Basic search param wiring in TopNav
-- Centralized BE fetch utilities (be/beJSON/beWrite)
-- Frontend project flattened to repo root
-
-## Phase 0 — TODOs
-
-- Item lists and detail pages per section (tweets/videos/docs/links)
-- Brain counts and details wired to BE (`${brainId}:count`, `${brainId}:detail`)
-- Search and filtering on server for item lists
-- Sharing: Wire share toggle/invite actions to BE
-- Error/empty states polish and loading skeletons
-- E2E smoke test for critical flows
-
-## Notes
-
-- Path alias `@/*` points to `src/*` (see `tsconfig.json`).
-- Revalidation: writes should call `revalidateTag()` via `beWrite(..., { tagsToRevalidate })` or manually where needed.
+3.  **Run Development Server:**
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-- `npm run dev` — Start dev server
-- `npm run build` — Production build
-- `npm run start` — Start built app
-- `npm run lint` — Lint sources
+- `npm run dev` - Start development server.
+- `npm run build` - Build for production.
+- `npm run start` - Start production server.
+- `npm run lint` - Run ESLint.
